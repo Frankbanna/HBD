@@ -97,13 +97,26 @@ for(let i=0;i<60;i++){
 }
 function drawStarsFloating(){
     ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
-    const cx = confettiCanvas.width/2;
-    const cy = confettiCanvas.height/2 - 30; // ขยับขึ้นใกล้ข้อความ
+
+    // หา bounding box ของข้อความบนและข้อความล่าง
+    const topText = document.querySelector('.card-top h1');
+    const bottomText = document.querySelector('.card-bottom h2');
+
+    const topRect = topText.getBoundingClientRect();
+    const bottomRect = bottomText.getBoundingClientRect();
+
+    // คำนวณ center Y ของวงดาว ให้อยู่กึ่งกลางระหว่างสองข้อความ
+    const cy = (topRect.bottom + bottomRect.top)/2 - card.getBoundingClientRect().top;
+
+    const cx = confettiCanvas.width / 2;
+
     starsFloating.forEach(s=>{
-        const effectiveRadius = s.radius + s.layer*10 - 10; // ลดรัศมีเล็กน้อย
+        // ปรับ radius ให้ดาวหมุนรอบจุดกลาง
+        const effectiveRadius = s.radius + s.layer*5;
+
         const x = cx + Math.cos(s.angle) * effectiveRadius;
         const z = Math.sin(s.angle) * effectiveRadius;
-        const perspectiveY = cy - z*0.5;
+        const perspectiveY = cy - z*0.3;
         const scale = 1 - s.layer*0.15;
 
         ctx.beginPath();
@@ -111,12 +124,17 @@ function drawStarsFloating(){
         ctx.fillStyle = `rgba(255,215,0,${s.alpha})`;
         ctx.fill();
 
-        s.angle += s.speed; // speed ปรับเล็กลง
+        // อัปเดต angle และ alpha
+        s.angle += s.speed;
         s.alpha += (Math.random()*s.alphaChange - s.alphaChange/2);
-        if(s.alpha>1) s.alpha=1; if(s.alpha<0.3) s.alpha=0.3;
+        if(s.alpha>1) s.alpha=1; 
+        if(s.alpha<0.3) s.alpha=0.3;
     });
+
     requestAnimationFrame(drawStarsFloating);
 }
+
+
 
 drawInnerStars();
 
