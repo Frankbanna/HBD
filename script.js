@@ -3,11 +3,7 @@ const spaceCanvas = document.getElementById('spaceCanvas');
 const sCtx = spaceCanvas.getContext('2d');
 
 const card = document.getElementById('card');
-const layers = [
-    document.getElementById('layer1'),
-    document.getElementById('layer2'),
-    document.getElementById('layer3')
-];
+const layers = [document.getElementById('layer1'), document.getElementById('layer2'), document.getElementById('layer3')];
 
 const confettiCanvas = document.getElementById('confettiCanvas');
 const ctx = confettiCanvas.getContext('2d');
@@ -17,7 +13,7 @@ const cardCtx = cardStarsCanvas.getContext('2d');
 
 function random(min,max){ return Math.random()*(max-min)+min; }
 
-// --- Responsive Canvas Resize ---
+// --- Responsive Resize ---
 function resizeCanvases() {
     spaceCanvas.width = window.innerWidth;
     spaceCanvas.height = window.innerHeight;
@@ -32,23 +28,22 @@ window.addEventListener('resize', resizeCanvases);
 resizeCanvases();
 
 // --- Space Background ---
-let stars = [], nebula = [];
+let stars=[], nebula=[];
 function createStars(count=400){
     for(let i=0;i<count;i++){
-        stars.push({ x: random(0,spaceCanvas.width), y: random(0,spaceCanvas.height), r: random(0.5,2), alpha: random(0.2,1), speed: random(0.05,0.2) });
+        stars.push({ x:random(0,spaceCanvas.width), y:random(0,spaceCanvas.height), r:random(0.5,2), alpha:random(0.2,1), speed:random(0.05,0.2) });
     }
 }
 function createNebula(count=6){
     for(let i=0;i<count;i++){
-        nebula.push({ x: random(0,spaceCanvas.width), y: random(0,spaceCanvas.height), radius: random(150,300), color: `rgba(${Math.floor(random(50,150))},${Math.floor(random(50,150))},255,0.1)` });
+        nebula.push({ x:random(0,spaceCanvas.width), y:random(0,spaceCanvas.height), radius:random(150,300), color:`rgba(${Math.floor(random(50,150))},${Math.floor(random(50,150))},255,0.1)` });
     }
 }
 function drawSpace(){
     sCtx.clearRect(0,0,spaceCanvas.width,spaceCanvas.height);
     nebula.forEach(n=>{
         const grad = sCtx.createRadialGradient(n.x,n.y,0,n.x,n.y,n.radius);
-        grad.addColorStop(0,n.color);
-        grad.addColorStop(1,'rgba(0,0,0,0)');
+        grad.addColorStop(0,n.color); grad.addColorStop(1,'rgba(0,0,0,0)');
         sCtx.fillStyle = grad;
         sCtx.fillRect(0,0,spaceCanvas.width,spaceCanvas.height);
     });
@@ -57,44 +52,72 @@ function drawSpace(){
         sCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
         sCtx.fillStyle = `rgba(255,255,255,${s.alpha})`;
         sCtx.fill();
-        s.alpha += (Math.random()*0.02-0.01);
-        if(s.alpha>1)s.alpha=1; if(s.alpha<0.1)s.alpha=0.1;
-        s.y -= s.speed;
-        if(s.y<0)s.y=spaceCanvas.height;
+        s.alpha += (Math.random()*0.02-0.01); if(s.alpha>1)s.alpha=1; if(s.alpha<0.1)s.alpha=0.1;
+        s.y -= s.speed; if(s.y<0)s.y=spaceCanvas.height;
     });
     requestAnimationFrame(drawSpace);
 }
 createStars(); createNebula(); drawSpace();
 
 // --- Floating Stars Around Card ---
-let starsFloating = [];
+let starsFloating=[];
 function createStarsFloating(count=120){
     for(let i=0;i<count;i++){
-        starsFloating.push({ angle: random(0, Math.PI*2), radius: random(60,200), speed: random(0.002,0.008), r: random(2,4), alpha: random(0.5,1), alphaChange: random(0.001,0.005), layer: Math.floor(random(0,3)) });
+        starsFloating.push({ angle: random(0,Math.PI*2), radius: random(60,100), speed: random(0.002,0.008), r: random(2,4), alpha: random(0.5,1), alphaChange: random(0.001,0.005), layer: Math.floor(random(0,3)) });
     }
 }
+function drawStarsFloating(){
+    ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    const cx = confettiCanvas.width/2;
+    const cy = confettiCanvas.height/2;
+    starsFloating.forEach(s=>{
+        const effectiveRadius = s.radius + s.layer*10;
+        const x = cx + Math.cos(s.angle)*effectiveRadius;
+        const z = Math.sin(s.angle)*effectiveRadius;
+        const perspectiveY = cy - z*0.5;
+        const scale = 1 - s.layer*0.15;
 
+        ctx.beginPath();
+        ctx.arc(x,perspectiveY,s.r*scale,0,Math.PI*2);
+        ctx.fillStyle = `rgba(255,215,0,${s.alpha})`;
+        ctx.fill();
+
+        s.angle += s.speed;
+        s.alpha += (Math.random()*s.alphaChange - s.alphaChange/2);
+        if(s.alpha>1)s.alpha=1; if(s.alpha<0.3)s.alpha=0.3;
+    });
+    requestAnimationFrame(drawStarsFloating);
+}
+createStarsFloating(); drawStarsFloating();
 
 // --- Inner Stars ---
-let innerStars = [];
+let innerStars=[];
 for(let i=0;i<60;i++){
-    innerStars.push({ x: Math.random()*cardStarsCanvas.width, y: Math.random()*cardStarsCanvas.height, r: random(1,3), alpha: random(0.3,0.8), speed: random(0.05,0.2) });
+    innerStars.push({ x:Math.random()*cardStarsCanvas.width, y:Math.random()*cardStarsCanvas.height, r:random(1,3), alpha:random(0.3,0.8), speed:random(0.05,0.2) });
 }
-function drawInnerStars(){
-    cardCtx.clearRect(0,0,cardStarsCanvas.width,cardStarsCanvas.height);
-    innerStars.forEach(s=>{
-        cardCtx.beginPath();
-        cardCtx.arc(s.x,s.y,s.r,0,Math.PI*2);
-        cardCtx.fillStyle = `rgba(255,255,200,${s.alpha})`;
-        cardCtx.fill();
-        s.alpha += (Math.random()*0.02-0.01);
-        if(s.alpha>0.8)s.alpha=0.8;
-        if(s.alpha<0.2)s.alpha=0.2;
-        s.y += s.speed;
-        if(s.y>cardStarsCanvas.height)s.y=0;
+function drawStarsFloating(){
+    ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
+    const cx = confettiCanvas.width/2;
+    const cy = confettiCanvas.height/2 - 30; // ขยับขึ้นใกล้ข้อความ
+    starsFloating.forEach(s=>{
+        const effectiveRadius = s.radius + s.layer*10 - 10; // ลดรัศมีเล็กน้อย
+        const x = cx + Math.cos(s.angle) * effectiveRadius;
+        const z = Math.sin(s.angle) * effectiveRadius;
+        const perspectiveY = cy - z*0.5;
+        const scale = 1 - s.layer*0.15;
+
+        ctx.beginPath();
+        ctx.arc(x, perspectiveY, s.r*scale, 0, Math.PI*2);
+        ctx.fillStyle = `rgba(255,215,0,${s.alpha})`;
+        ctx.fill();
+
+        s.angle += s.speed; // speed ปรับเล็กลง
+        s.alpha += (Math.random()*s.alphaChange - s.alphaChange/2);
+        if(s.alpha>1) s.alpha=1; if(s.alpha<0.3) s.alpha=0.3;
     });
-    requestAnimationFrame(drawInnerStars);
+    requestAnimationFrame(drawStarsFloating);
 }
+
 drawInnerStars();
 
 // --- 3D Card Interaction ---
@@ -115,45 +138,5 @@ function rotateCard(clientX, clientY){
         layer.style.transform = `rotateY(${offsetX}deg) rotateX(${offsetY}deg) translateZ(${zTranslate}px)`;
     });
 }
-document.addEventListener('mousemove', e=> rotateCard(e.clientX,e.clientY));
-document.addEventListener('touchmove', e=>{
-    const t = e.touches[0];
-    rotateCard(t.clientX,t.clientY);
-});
-  function drawStarsFloating() {
-    ctx.clearRect(0, 0, confettiCanvas.width, confettiCanvas.height);
-
-    // Center ของ canvas
-    const cx = confettiCanvas.width / 2;
-    const cy = confettiCanvas.height / 2;
-
-    starsFloating.forEach(s => {
-        // ปรับ radius ตาม layer เพื่อให้ลึก/ใกล้
-        const effectiveRadius = s.radius + s.layer * 10;
-
-        // คำนวณตำแหน่ง x, y แบบวงกลม
-        const x = cx + Math.cos(s.angle) * effectiveRadius;
-        const z = Math.sin(s.angle) * effectiveRadius;
-
-        // ใช้ z เพื่อปรับ y ให้ดูเหมือนลอยสูงต่ำ (3D perspective)
-        const perspectiveY = cy - z * 0.5; // ปรับค่า 0.5 สำหรับความลึก
-
-        // ขนาดดาวตาม layer (ใกล้ใหญ่ ไกลเล็ก)
-        const scale = 1 - s.layer * 0.15;
-
-        ctx.beginPath();
-        ctx.arc(x, perspectiveY, s.r * scale, 0, Math.PI * 2);
-        ctx.fillStyle = `rgba(255,215,0,${s.alpha})`;
-        ctx.fill();
-
-        // อัปเดตมุม
-        s.angle += s.speed;
-
-        // เปลี่ยน alpha แบบสุ่มเล็กน้อย
-        s.alpha += (Math.random() * s.alphaChange - s.alphaChange / 2);
-        if (s.alpha > 1) s.alpha = 1;
-        if (s.alpha < 0.3) s.alpha = 0.3;
-    });
-
-    requestAnimationFrame(drawStarsFloating);
-}
+document.addEventListener('mousemove', e => rotateCard(e.clientX,e.clientY));
+document.addEventListener('touchmove', e => { rotateCard(e.touches[0].clientX,e.touches[0].clientY); });
