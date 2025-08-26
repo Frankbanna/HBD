@@ -98,25 +98,17 @@ for(let i=0;i<60;i++){
 function drawStarsFloating(){
     ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
 
-    // หา bounding box ของข้อความบนและข้อความล่าง
-    const topText = document.querySelector('.card-top h1');
-    const bottomText = document.querySelector('.card-bottom h2');
-
-    const topRect = topText.getBoundingClientRect();
-    const bottomRect = bottomText.getBoundingClientRect();
-
-    // คำนวณ center Y ของวงดาว ให้อยู่กึ่งกลางระหว่างสองข้อความ
-    const cy = (topRect.bottom + bottomRect.top)/2 - card.getBoundingClientRect().top;
-
+    // กำหนด center ของวงดาวรอบข้อความด้านบน
     const cx = confettiCanvas.width / 2;
+    const cy = confettiCanvas.height * 0.25; // 25% ของความสูงการ์ด (HAPPY BIRTHDAY)
 
     starsFloating.forEach(s=>{
-        // ปรับ radius ให้ดาวหมุนรอบจุดกลาง
-        const effectiveRadius = s.radius + s.layer*5;
+        // ปรับ radius ให้ดาวหมุนเป็นวงกลมรอบข้อความบน
+        const effectiveRadius = s.radius + s.layer*5 + 20; // คุมให้ไม่ลอยสูงหรือต่ำเกินไป
 
         const x = cx + Math.cos(s.angle) * effectiveRadius;
         const z = Math.sin(s.angle) * effectiveRadius;
-        const perspectiveY = cy - z*0.3;
+        const perspectiveY = cy - z*0.3; // ปรับ depth ให้ดู 3D เล็กน้อย
         const scale = 1 - s.layer*0.15;
 
         ctx.beginPath();
@@ -133,7 +125,6 @@ function drawStarsFloating(){
 
     requestAnimationFrame(drawStarsFloating);
 }
-
 
 
 drawInnerStars();
