@@ -127,3 +127,13 @@ body {
     .card-layer { filter: blur(4px); }
     .card { box-shadow: 0 15px 40px rgba(0,0,0,0.4); }
 }
+.card-date {
+    position: absolute;
+    bottom: 15px;   /* ระยะจากด้านล่าง */
+    right: 20px;    /* ระยะจากด้านขวา */
+    font-size: 1rem;
+    font-weight: 600;
+    color: #ffd700;  /* สีทอง */
+    text-shadow: 0 0 5px rgba(255,255,255,0.5);
+    z-index: 5;
+}
