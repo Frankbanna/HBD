@@ -98,17 +98,31 @@ for(let i=0;i<60;i++){
 function drawStarsFloating(){
     ctx.clearRect(0,0,confettiCanvas.width,confettiCanvas.height);
 
-    // กำหนด center ของวงดาวรอบข้อความด้านบน
-    const cx = confettiCanvas.width / 2;
-    const cy = confettiCanvas.height * 0.25; // 25% ของความสูงการ์ด (HAPPY BIRTHDAY)
+    const topText = document.querySelector('.card-top h1');
+    const bottomText = document.querySelector('.card-bottom h2');
+
+    const topRect = topText.getBoundingClientRect();
+    const bottomRect = bottomText.getBoundingClientRect();
+    const cardTop = card.getBoundingClientRect().top;
+
+    // กึ่งกลางช่องว่าง
+    const spaceTop = topRect.bottom - cardTop;
+    const spaceBottom = bottomRect.top - cardTop;
+    const cy = spaceTop + (spaceBottom - spaceTop)/2;
+    const cx = confettiCanvas.width/2;
+
+    // คำนวณ min/max radius ให้ดาวกระจายตัวกันกว้าง
+    const radiusMin = 30; // ระยะใกล้ข้อความ
+    const radiusMax = (spaceBottom - spaceTop)/2 - 5 + 40; // เพิ่ม 40px ให้กระจายออกไปมากขึ้น
 
     starsFloating.forEach(s=>{
-        // ปรับ radius ให้ดาวหมุนเป็นวงกลมรอบข้อความบน
-        const effectiveRadius = s.radius + s.layer*5 + 20; // คุมให้ไม่ลอยสูงหรือต่ำเกินไป
+        // กำหนด radius แบบสุ่มแต่ละดวงเพื่อกระจาย
+        const radius = Math.min(Math.max(s.radius + s.layer*5, radiusMin), radiusMax);
 
-        const x = cx + Math.cos(s.angle) * effectiveRadius;
-        const z = Math.sin(s.angle) * effectiveRadius;
-        const perspectiveY = cy - z*0.3; // ปรับ depth ให้ดู 3D เล็กน้อย
+        // ตำแหน่งวงกลมสมบูรณ์
+        const x = cx + Math.cos(s.angle) * radius;
+        const z = Math.sin(s.angle) * radius;
+        const perspectiveY = cy - z*0.3;
         const scale = 1 - s.layer*0.15;
 
         ctx.beginPath();
@@ -116,15 +130,18 @@ function drawStarsFloating(){
         ctx.fillStyle = `rgba(255,215,0,${s.alpha})`;
         ctx.fill();
 
-        // อัปเดต angle และ alpha
-        s.angle += s.speed;
+        // ความเร็วหมุน
+        const speedFactor = window.innerWidth < 768 ? 0.002 : 0.004;
+        s.angle += speedFactor * (s.layer + 1);
+
         s.alpha += (Math.random()*s.alphaChange - s.alphaChange/2);
-        if(s.alpha>1) s.alpha=1; 
+        if(s.alpha>1) s.alpha=1;
         if(s.alpha<0.3) s.alpha=0.3;
     });
 
     requestAnimationFrame(drawStarsFloating);
 }
+
 
 
 drawInnerStars();
